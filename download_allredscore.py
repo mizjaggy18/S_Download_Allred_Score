@@ -23,26 +23,14 @@ import sys
 import numpy as np
 import os
 import cytomine
-from shapely.geometry import shape, box, Polygon,Point
-from shapely import wkt
 from glob import glob
-from tifffile import imread
-#from csbdeep.utils import Path, normalize
-#from stardist import random_label_cmap
-#from stardist.models import StarDist2D
+
 from cytomine import Cytomine, models, CytomineJob
 from cytomine.models import Annotation, AnnotationTerm, AnnotationCollection, ImageInstanceCollection, Job, JobData, Project, ImageInstance, Property
 from cytomine.models.ontology import Ontology, OntologyCollection, Term, RelationTerm, TermCollection
-# from cytomine.models.property import Tag, TagCollection, PropertyCollection
-# from cytomine.utilities.software import parse_domain_list, str2bool, setup_classify, stringify
-
-
-from PIL import Image
 
 import matplotlib.pyplot as plt
 import time
-import cv2
-import math
 import re
 
 from argparse import ArgumentParser
@@ -147,23 +135,13 @@ def run(cyto_job, parameters):
             
 
             if term==[parameters.cytomine_id_c0_term]:
-                # id_terms=parameters.id_c0_term
                 pred_c0=pred_c0+1                
             elif term==[parameters.cytomine_id_c1_term]:
-                # print("Class 1: Weak")
-                # id_terms=parameters.id_c1_term
                 pred_c1=pred_c1+1
-                # roi.dump(dest_pattern=os.path.join(roi_path+'Class1/'+str(roi.id)+'.png'),alpha=True)
             elif term==[parameters.cytomine_id_c2_term]:
-                # print("Class 2: Moderate")
-                # id_terms=parameters.id_c2_term
                 pred_c2=pred_c2+1
-                # roi.dump(dest_pattern=os.path.join(roi_path+'Class2/'+str(roi.id)+'.png'),alpha=True)
             elif term==[parameters.cytomine_id_c3_term]:
-                # print("Class 3: Strong")
-                # id_terms=parameters.id_c3_term
                 pred_c3=pred_c3+1
-                # roi.dump(dest_pattern=os.path.join(roi_path+'Class3/'+str(roi.id)+'.png'),alpha=True)
 
 
         pred_all=[pred_c0, pred_c1, pred_c2, pred_c3]
