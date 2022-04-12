@@ -41,7 +41,7 @@ import shutil
 
 __author__ = "WSH Munirah W Ahmad <wshmunirah@gmail.com>"
 __copyright__ = "Apache 2 license. Made by Multimedia University Cytomine Team, Cyberjaya, Malaysia, http://cytomine.mmu.edu.my/"
-__version__ = "1.0.1"
+__version__ = "1.0.4"
 # Date created : 07 April 2022
 
 def run(cyto_job, parameters):
@@ -88,117 +88,128 @@ def run(cyto_job, parameters):
     # for id_image in list_imgs2:
     #     print(id_image) 
 
+    working_path = os.path.join(currentdir,str(job.id))
 
-    # working_path = os.path.join(currentdir,str(id_image))
-    output_path = os.path.join(currentdir, "WSI_scoring_results.csv")
-    f= open(output_path,"w+")
-    f.write("Image ID;Class Prediction;Class 0 (Negative);Class 1 (Weak);Class 2 (Moderate);Class 3 (Strong);Total Prediction;Total Positive;Class Positive Max;Positive Percentage;Proportion Score;Intensity Score;Allred Score;Execution Time;Prediction Time \n")
-        
+    if not os.path.exists(working_path):
+        logging.info("Creating working directory: %s", working_path)
+        os.makedirs(working_path)
 
-    #Go over images
-    for id_image in list_imgs2:
-        print('Current image:', id_image)
-        roi_annotations = AnnotationCollection()
-        roi_annotations.project = project.id
-        # roi_annotations.term = parameters.id_cell_term
-        roi_annotations.image = id_image #conn.parameters.cytomine_id_image            
-        # roi_annotations.showWKT = True
-        roi_annotations.showTerm = True
-
-        if parameters.cytomine_id_user_job != 0:
-            roi_annotations.job = parameters.cytomine_id_annotation_job
-            roi_annotations.user = parameters.cytomine_id_user_job
-
-        roi_annotations.fetch()
-        # print(roi_annotations)
-
-        current_im = ImageInstance().fetch(id_image)
-        # current_im2 = 
-
-        start_scoring_time=time.time()
-        # predictions = []
-        # img_all = []
-        pred_all = []
-        pred_c0 = 0
-        pred_c1 = 0
-        pred_c2 = 0
-        pred_c3 = 0
-
-
-        for i, roi in enumerate(roi_annotations):
-            term=roi.term
-            # term=int(term)
-            # regex = '\d+'          
-            # term = re.findall(regex, term)
-            print(term)
+    try:
+        output_path = os.path.join(working_path, "WSI_scoring_results.csv")
+        f= open(output_path,"w+")
+        f.write("Image ID;Class Prediction;Class 0 (Negative);Class 1 (Weak);Class 2 (Moderate);Class 3 (Strong);Total Prediction;Total Positive;Class Positive Max;Positive Percentage;Proportion Score;Intensity Score;Allred Score;Execution Time;Prediction Time \n")
             
 
-            if term==[parameters.cytomine_id_c0_term]:
-                pred_c0=pred_c0+1                
-            elif term==[parameters.cytomine_id_c1_term]:
-                pred_c1=pred_c1+1
-            elif term==[parameters.cytomine_id_c2_term]:
-                pred_c2=pred_c2+1
-            elif term==[parameters.cytomine_id_c3_term]:
-                pred_c3=pred_c3+1
+        #Go over images
+        for id_image in list_imgs2:
+            print('Current image:', id_image)
+            roi_annotations = AnnotationCollection()
+            roi_annotations.project = project.id
+            # roi_annotations.term = parameters.id_cell_term
+            roi_annotations.image = id_image #conn.parameters.cytomine_id_image            
+            # roi_annotations.showWKT = True
+            roi_annotations.showTerm = True
+
+            if parameters.cytomine_id_user_job != 0:
+                roi_annotations.job = parameters.cytomine_id_annotation_job
+                roi_annotations.user = parameters.cytomine_id_user_job
+
+            roi_annotations.fetch()
+            # print(roi_annotations)
+
+            current_im = ImageInstance().fetch(id_image)
+            # current_im2 = 
+
+            start_scoring_time=time.time()
+            # predictions = []
+            # img_all = []
+            pred_all = []
+            pred_c0 = 0
+            pred_c1 = 0
+            pred_c2 = 0
+            pred_c3 = 0
 
 
-        pred_all=[pred_c0, pred_c1, pred_c2, pred_c3]
-        pred_positive_all=[pred_c1, pred_c2, pred_c3]
-        print("pred_all:", pred_all)
-        im_pred = np.argmax(pred_all)
-        print("image prediction:", im_pred)
-        pred_total=pred_c0+pred_c1+pred_c2+pred_c3
-        print("pred_total:",pred_total)
-        pred_positive=pred_c1+pred_c2+pred_c3
-        print("pred_positive:",pred_positive)
-        print("pred_positive_all:",pred_positive_all)
-        print("pred_positive_max:",np.argmax(pred_positive_all))
-        pred_positive_100=pred_positive/pred_total*100
-        print("pred_positive_100:",pred_positive_100)
+            for i, roi in enumerate(roi_annotations):
+                term=roi.term
+                # term=int(term)
+                # regex = '\d+'          
+                # term = re.findall(regex, term)
+                # print(term)
+                
 
-        if pred_positive_100 == 0:
-            proportion_score = 0
-        elif pred_positive_100 < 1:
-            proportion_score = 1
-        elif pred_positive_100 >= 1 and pred_positive_100 <= 10:
-            proportion_score = 2
-        elif pred_positive_100 > 10 and pred_positive_100 <= 33:
-            proportion_score = 3
-        elif pred_positive_100 > 33 and pred_positive_100 <= 66:
-            proportion_score = 4
-        elif pred_positive_100 > 66:
-            proportion_score = 5
+                if term==[parameters.cytomine_id_c0_term]:
+                    pred_c0=pred_c0+1                
+                elif term==[parameters.cytomine_id_c1_term]:
+                    pred_c1=pred_c1+1
+                elif term==[parameters.cytomine_id_c2_term]:
+                    pred_c2=pred_c2+1
+                elif term==[parameters.cytomine_id_c3_term]:
+                    pred_c3=pred_c3+1
 
-        if pred_positive_100 == 0:
-            intensity_score = 0
-        elif im_pred == 0:
-            intensity_score = np.argmax(pred_positive_all)+1
-        elif im_pred == 1:
-            intensity_score = 1
-        elif im_pred == 2:
-            intensity_score = 2
-        elif im_pred == 3:
-            intensity_score = 3
 
-        allred_score = proportion_score + intensity_score
-        print('Proportion Score: ',proportion_score)
-        print('Intensity Score: ',intensity_score)            
-        print('Allred Score: ',allred_score)
-        # shutil.rmtree(roi_path, ignore_errors=True)
-        
-        end_time=time.time()
-        print("Execution time: ",end_time-start_time)
-        print("Scoring time: ",end_time-start_scoring_time)
-        
-        
-        f.write("{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(id_image,im_pred,pred_c0,pred_c1,pred_c2,pred_c3,pred_total,pred_positive,np.argmax(pred_positive_all),pred_positive_100,proportion_score,intensity_score,allred_score,end_time-start_time,end_time-start_scoring_time))
-        # f.write(" \n")
-    f.close()
-    job_data = JobData(job.id, "Generated File", "WSI_scoring_results.csv").save()
-    job_data.upload(output_path)
+            pred_all=[pred_c0, pred_c1, pred_c2, pred_c3]
+            pred_positive_all=[pred_c1, pred_c2, pred_c3]
+            print("pred_all:", pred_all)
+            im_pred = np.argmax(pred_all)
+            print("image prediction:", im_pred)
+            pred_total=pred_c0+pred_c1+pred_c2+pred_c3
+            print("pred_total:",pred_total)
+            pred_positive=pred_c1+pred_c2+pred_c3
+            print("pred_positive:",pred_positive)
+            print("pred_positive_all:",pred_positive_all)
+            print("pred_positive_max:",np.argmax(pred_positive_all))
+            pred_positive_100=pred_positive/pred_total*100
+            print("pred_positive_100:",pred_positive_100)
+
+            if pred_positive_100 == 0:
+                proportion_score = 0
+            elif pred_positive_100 < 1:
+                proportion_score = 1
+            elif pred_positive_100 >= 1 and pred_positive_100 <= 10:
+                proportion_score = 2
+            elif pred_positive_100 > 10 and pred_positive_100 <= 33:
+                proportion_score = 3
+            elif pred_positive_100 > 33 and pred_positive_100 <= 66:
+                proportion_score = 4
+            elif pred_positive_100 > 66:
+                proportion_score = 5
+
+            if pred_positive_100 == 0:
+                intensity_score = 0
+            elif im_pred == 0:
+                intensity_score = np.argmax(pred_positive_all)+1
+            elif im_pred == 1:
+                intensity_score = 1
+            elif im_pred == 2:
+                intensity_score = 2
+            elif im_pred == 3:
+                intensity_score = 3
+
+            allred_score = proportion_score + intensity_score
+            print('Proportion Score: ',proportion_score)
+            print('Intensity Score: ',intensity_score)            
+            print('Allred Score: ',allred_score)
+            # shutil.rmtree(roi_path, ignore_errors=True)
+            
+            end_time=time.time()
+            print("Execution time: ",end_time-start_time)
+            print("Scoring time: ",end_time-start_scoring_time)
+            
+            
+            f.write("{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(id_image,im_pred,pred_c0,pred_c1,pred_c2,pred_c3,pred_total,pred_positive,np.argmax(pred_positive_all),pred_positive_100,proportion_score,intensity_score,allred_score,end_time-start_time,end_time-start_scoring_time))
+            # f.write(" \n")
+        f.close()
+        job_data = JobData(job.id, "Generated File", "WSI_scoring_results.csv").save()
+        job_data.upload(output_path)
+
+    finally:
+        logging.info("Deleting folder %s", working_path)
+        shutil.rmtree(working_path, ignore_errors=True)
+        logging.debug("Leaving run()")
 
     job.update(status=Job.TERMINATED, progress=100, statusComment="Finished.") 
+
 
 if __name__ == "__main__":
     logging.debug("Command: %s", sys.argv)
