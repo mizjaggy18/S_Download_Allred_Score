@@ -14,6 +14,9 @@
 
 FROM cytomine/software-python3-base
 
+RUN pip install numpy
+
+
 ADD download_allredscore.py /app/download_allredscore.py
 
 ENTRYPOINT ["python", "/app/download_allredscore.py"]
