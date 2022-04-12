@@ -52,11 +52,6 @@ def run(cyto_job, parameters):
     user = job.userJob
     project = cyto_job.project
 
-    # base_path = "{}".format(os.getenv("HOME")) # Mandatory for Singularity
-    currentdir = os.path.dirname(__file__)
-    # working_path = os.path.join(currentdir,str(parameters.cytomine_id_images))
-
-
     terms = TermCollection().fetch_with_filter("project", project.id)
     # conn.job.update(status=Job.RUNNING, progress=1, statusComment="Terms collected...")
     print(terms)
@@ -88,7 +83,7 @@ def run(cyto_job, parameters):
     # for id_image in list_imgs2:
     #     print(id_image) 
 
-    working_path = os.path.join(currentdir,str(job.id))
+    working_path = os.path.join("tmp",str(job.id))
 
     if not os.path.exists(working_path):
         logging.info("Creating working directory: %s", working_path)
